@@ -5,6 +5,7 @@ from astropy import units as u
 import math
 import os
 from scipy.signal import find_peaks
+import json
 
 
 class PygwyTxt:
@@ -21,7 +22,6 @@ class PygwyTxt:
         self.__distance_per_index_x = self.__scan_size_x / self.__scan.value.shape[1]
         self.__distance_per_index_y = self.__scan_size_y / self.__scan.value.shape[0]
         self.__height_map, self.__period_map = self.__generate_height_and_period_map()
-        self.__calculate_stats()
 
         mean_exponent = int(math.floor(math.log10(self.__scan.value.mean())))
         optimal_unit_exponent = 3 * round(mean_exponent / 3)
@@ -35,6 +35,8 @@ class PygwyTxt:
             self.__scan = self.__scan.to(u.pm)
         if optimal_unit_exponent == -15:
             self.__scan = self.__scan.to(u.fm)
+
+        self.__stats = self.__calculate_stats()
 
     def plot_scan(self, show_plot_line=True, cmap='viridis'):
         fig, ax = plt.subplots()
@@ -97,27 +99,50 @@ class PygwyTxt:
         return height_map, period_map
 
     def __calculate_stats(self):
-        height_mean = []
-        height_std = []
-        for line in self.__height_map:
-            mean = np.mean(line)
-            std = np.std(line, ddof=1)
-            height_mean.append(mean)
-            height_std.append(std)
+        mean_height = (np.mean(self.__height_map) * u.m).to(self.__scan.unit)
+        std_height = (np.std(self.__height_map) * u.m).to(self.__scan.unit)
 
-        period_mean = []
-        period_std = []
-        for line in self.__period_map:
-            mean = np.mean(line)
-            std = np.std(line, ddof=1)
-            period_mean.append(mean)
-            period_std.append(std)
+        mean_period = np.mean(self.__period_map) * u.um
+        std_period = np.std(self.__period_map) * u.um
 
-        global_height_mean = np.mean(height_mean)
-        global_period_mean = np.mean(period_mean)
+        min_height = (float(np.min(self.__height_map)) * u.m).to(self.__scan.unit)
+        max_height = (float(np.max(self.__height_map)) * u.m).to(self.__scan.unit)
 
-        print(f'Global mean height: {global_height_mean}, Global mean period: {global_period_mean}')
+        min_period = float(np.min(self.__period_map)) * u.um
+        max_period = float(np.max(self.__period_map)) * u.um
+
+        header = f"========== {self.__name} =========="
+        footer = "=" * len(header)
+
+        print(f"{header}\n"
+              f"height: {mean_height:.2f} +/- {std_height:.2f} \n"
+              f"period: {mean_period:.2f} +/- {std_period:.2f} \n\n"
+              f"min height: {min_height:.2f} \n"
+              f"max height: {max_height:.2f} \n\n"
+              f"min period: {min_period:.2f} \n"
+              f"max period: {max_period:.2f} \n"
+              f"{footer}\n\n\n")
+
+        stats = {
+            "mean_height": float(mean_height.to(u.m).value),
+            "std_height": float(std_height.to(u.m).value),
+            "mean_period": float(mean_period.to(u.m).value),
+            "std_period": float(std_period.to(u.m).value),
+            "min_height": float(min_height.to(u.m).value),
+            "max_height": float(max_height.to(u.m).value),
+            "min_period": float(min_period.to(u.m).value),
+            "max_period": float(max_period.to(u.m).value)
+        }
+
+        return stats
+
+    def export_stats(self):
+        export_path = os.path.join(os.path.dirname(self.__file_path), f'stats_{self.__name}.json')
+        with open(export_path, 'w') as f:
+            json.dump(self.__stats, f)
 
 
 scan = PygwyTxt(r"C:\Users\Mika Music\Data\251029_WNE_pygwy\gwy\ref.txt", 20, 5)
+
+scan.export_stats()
 
