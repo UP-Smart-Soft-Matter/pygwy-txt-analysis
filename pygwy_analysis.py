@@ -4,8 +4,6 @@ import numpy as np
 from astropy import units as u
 import math
 import os
-
-from scipy.constants import sigma
 from scipy.signal import find_peaks
 import json
 import tkinter as tk
