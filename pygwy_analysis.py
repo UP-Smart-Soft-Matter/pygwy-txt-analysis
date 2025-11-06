@@ -4,6 +4,8 @@ import numpy as np
 from astropy import units as u
 import math
 import os
+
+from scipy.constants import sigma
 from scipy.signal import find_peaks
 import json
 import tkinter as tk
@@ -11,6 +13,7 @@ from tkinter import filedialog
 import glob2
 import re
 import csv
+from lmfit import Model
 
 def homogenize_array(array):
     max_len = max(len(row) for row in array)
@@ -199,7 +202,7 @@ class StatJson:
 
 
 
-    def plot(self, plot_type:int ,x_lable:str, x_unit:str, plot_name_appendix = ''):
+    def plot(self, plot_type:int ,x_lable:str, x_unit:str, plot_name_appendix = '', model = None, params = None):
         if plot_type == 0:
             plot_name = "mean height"
             mean_key = 'mean_height'
@@ -230,11 +233,29 @@ class StatJson:
         std = (std * u.m).to(mean.unit)
 
         fig, ax = plt.subplots()
+
+        if model is not None and params is not None:
+            assert isinstance(model, Model) == True
+
+            result = model.fit(mean.value, params, x=x_values, weights=1/std.value)
+            print(result.fit_report())
+            plt.plot(x_values, result.best_fit, color='red', label='best fit')
+
+            if plot_type == 0:
+                self.__plot_data_height.append((result.best_fit * mean.unit).to(u.m).value)
+            elif plot_type == 1:
+                self.__plot_data_period.append((result.best_fit * mean.unit).to(u.m).value)
+
+            with open(os.path.join(self.__export_path, f'fit_report_{plot_name}_{plot_name_appendix}.txt'), 'w') as file:
+                file.write(result.fit_report())
+
+
         ax.set_title(f'{plot_name} {plot_name_appendix}')
-        ax.plot(x_values, mean, 'o', zorder=2)
-        ax.errorbar(x_values, mean, yerr=std, fmt='none', capsize=5, ecolor='black', elinewidth=1, zorder=1)
+        ax.plot(x_values, mean, 'o', zorder=2, label='mean')
+        ax.errorbar(x_values, mean, yerr=std, fmt='none', capsize=5, ecolor='black', elinewidth=1, zorder=1, label='std')
         plt.xlabel(f"{x_lable} [{x_unit}]")
         plt.ylabel(f"{y_label} [{str(mean.unit).replace('u', 'µ')}]")
+        plt.legend()
         plt.show()
         if plot_name_appendix == '':
             fig.savefig(os.path.join(self.__export_path, f'{plot_name}.png'), bbox_inches='tight',
@@ -256,14 +277,13 @@ class StatJson:
         if plot_data is not None:
             with open(os.path.join(self.__export_path, name), 'w', newline='') as file:
                 writer = csv.writer(file)
-                writer.writerow(['x', 'y', 'std'])
-                for i in range(len(plot_data[0])):
-                    writer.writerow([plot_data[0][i], plot_data[1][i], plot_data[2][i]])
 
+                if len(plot_data) == 3:
+                    writer.writerow(['x', 'y', 'std'])
+                    for i in range(len(plot_data[0])):
+                        writer.writerow([plot_data[0][i], plot_data[1][i], plot_data[2][i]])
+                elif len(plot_data) == 4:
+                    writer.writerow(['x', 'y', 'std', 'best fit'])
+                    for i in range(len(plot_data[0])):
+                        writer.writerow([plot_data[0][i], plot_data[1][i], plot_data[2][i], plot_data[3][i]])
 
-
-stats = StatJson(r'C:\Users\Mika Music\Data\251029_WNE_pygwy\gwy\WN\export')
-stats.plot(0, 'time', 's')
-stats.plot(1, 'time', 's')
-stats.export_plot_data(0)
-stats.export_plot_data(1)
