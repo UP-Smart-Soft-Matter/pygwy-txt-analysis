@@ -95,9 +95,9 @@ class PygwyTxt:
         file_path : str
             Path to the input .txt file.
         scan_size_x : float
-            Scan width in meters.
+            Scan width in µm.
         scan_size_y : float
-            Scan height in meters.
+            Scan height in µm.
         name : str, optional
             Custom name for the object.
         """
