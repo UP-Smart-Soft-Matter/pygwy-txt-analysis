@@ -1,3 +1,5 @@
+import numbers
+from collections.abc import Sequence
 import matplotlib.pyplot as plt
 from mpl_toolkits.axes_grid1 import make_axes_locatable
 import numpy as np
@@ -86,7 +88,7 @@ class PygwyTxt:
     (e.g., Gwyddion exports).
     """
 
-    def __init__(self, file_path: str, scan_size_x: float, scan_size_y: float, name: str = None):
+    def __init__(self, file_path: str, scan_size_x: float, scan_size_y: float, name: str = None, peak_finder_settings = None):
         """
         Initializes a PygwyTxt instance.
 
@@ -106,6 +108,10 @@ class PygwyTxt:
             self.__name = os.path.basename(os.path.splitext(self.__file_path)[0])
         else:
             self.__name = name
+        if peak_finder_settings is None:
+            self.__peak_finder_settings = PeakFinderSettings()
+        else:
+            self.__peak_finder_settings = peak_finder_settings
         self.__scan_size_x = scan_size_x
         self.__scan_size_y = scan_size_y
         self.__scan = np.genfromtxt(file_path, delimiter='\t') * u.m
@@ -198,7 +204,7 @@ class PygwyTxt:
         period_list = []
 
         for line in self.__scan.value:
-            peaks, peak_metadata = find_peaks(line)
+            peaks, peak_metadata = find_peaks(line, self.__peak_finder_settings.height, )
             valleys, valley_metadata = find_peaks(line * -1)
 
             heights = []
@@ -414,3 +420,31 @@ class StatJson:
                     writer.writerow(['x', 'y', 'std', 'best fit'])
                     for i in range(len(plot_data[0])):
                         writer.writerow([plot_data[0][i], plot_data[1][i], plot_data[2][i], plot_data[3][i]])
+
+class PeakFinderSettings:
+    def __init__(self,
+                 height=None,
+                 threshold=None,
+                 distance=None,
+                 prominence=None,
+                 width=None,
+                 wlen=None,
+                 rel_height=None,
+                 plateau_size=None):
+        assert isinstance(height, (numbers.Number, np.ndarray, Sequence)) or height is None
+        assert isinstance(threshold, (numbers.Number, np.ndarray, Sequence)) or threshold is None
+        assert isinstance(distance, numbers.Number) or distance is None
+        assert isinstance(prominence, (numbers.Number, np.ndarray, Sequence)) or prominence is None
+        assert isinstance(width, (numbers.Number, np.ndarray, Sequence)) or width is None
+        assert wlen is int or wlen is None
+        assert rel_height is float or rel_height is None
+        assert isinstance(plateau_size, (numbers.Number, np.ndarray, Sequence)) or plateau_size is None
+
+        self.__height = height
+        self.__threshold = threshold
+        self.__distance = distance
+        self.__prominence = prominence
+        self.__width = width
+        self.__wlen = wlen
+        self.__rel_height = rel_height
+        self.__plateau_size = plateau_size
