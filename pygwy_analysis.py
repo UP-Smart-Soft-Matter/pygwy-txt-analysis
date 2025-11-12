@@ -29,6 +29,10 @@ def homogenize_array(array):
     np.ndarray
         2D NumPy array with equal row lengths, padded with NaN values.
     """
+
+    if isinstance(array[0], np.ndarray):
+        array = [row.tolist() for row in array]
+
     max_len = max(len(row) for row in array)
     return np.array([row + [np.nan] * (max_len - len(row)) for row in array])
 
@@ -118,6 +122,8 @@ class PygwyTxt:
         self.__profile_line = int(self.__scan.value.shape[0]/2)
         self.__distance_per_index_x = self.__scan_size_x / self.__scan.value.shape[1]
         self.__distance_per_index_y = self.__scan_size_y / self.__scan.value.shape[0]
+        self.__peak_array = None
+        self.__valley_array = None
         self.__height_map, self.__period_map = self.__generate_height_and_period_map()
 
         self.__export_path = os.path.join(os.path.dirname(self.__file_path), 'export')
@@ -191,6 +197,30 @@ class PygwyTxt:
         plt.show()
         fig.savefig(os.path.join(self.__export_path, f'{self.__name}_profile_line_{line}_from_{start}_to_{stop}.png'), bbox_inches='tight', pad_inches=0.05, dpi=300)
 
+    def plot_debug(self, line: int=None):
+        if line is None:
+            line = self.__profile_line
+
+        plot_line = self.__scan.to(u.m).value[line]
+
+        fig, ax = plt.subplots(2)
+        ax[0].plot(plot_line)
+        ax[0].plot(self.__peak_array[line], plot_line[self.__peak_array[line]], 'x')
+        ax[0].plot(self.__valley_array[line], plot_line[self.__valley_array[line]], 'x')
+        for i, height in enumerate(self.__height_map[line]):
+            print(height)
+            ax[0].vlines((self.__peak_array[line][i] + self.__valley_array[line][i]) / 2, plot_line[self.__valley_array[line][i]], height + plot_line[self.__valley_array[line][i]], color='red')
+
+        ax[1].plot(plot_line)
+        ax[1].plot(self.__peak_array[line], plot_line[self.__peak_array[line]], 'x')
+        for i, period in enumerate(self.__period_map[line]):
+            plt.hlines(plot_line[self.__peak_array[line][i]], self.__peak_array[line][i], self.__peak_array[line][i] + (period / self.__distance_per_index_x), color='green')
+
+        fig.tight_layout()
+        plt.show()
+
+
+
     def __generate_height_and_period_map(self):
         """
         Generates maps of peak heights and periods for each scan line.
@@ -202,6 +232,8 @@ class PygwyTxt:
         """
         height_list = []
         period_list = []
+        peak_list = []
+        valley_list = []
 
         for line in self.__scan.value:
             peaks, peak_metadata = find_peaks(line,
@@ -214,6 +246,9 @@ class PygwyTxt:
                                               self.__peak_finder_settings.rel_height,
                                               self.__peak_finder_settings.plateau_size)
             valleys, valley_metadata = find_peaks(line * -1)
+
+            peak_list.append(peaks)
+            valley_list.append(valleys)
 
             heights = []
             for i, peak in enumerate(peaks):
@@ -230,8 +265,11 @@ class PygwyTxt:
             height_list.append(heights)
             period_list.append(periods)
 
-        height_map = np.array(homogenize_array(height_list))
-        period_map = np.array(homogenize_array(period_list))
+        self.__peak_array = homogenize_array(peak_list)
+        self.__valley_array = homogenize_array(valley_list)
+
+        height_map = homogenize_array(height_list)
+        period_map = homogenize_array(period_list)
         return height_map, period_map
 
     def __calculate_stats(self):
@@ -458,8 +496,8 @@ class PeakFinderSettings:
         self.rel_height = rel_height
         self.plateau_size = plateau_size
 
-peak_finder_settings = PeakFinderSettings(distance=30)
-scan = PygwyTxt(r'C:\Users\Mika Music\Data\251029_WNE_pygwy\gwy\ref.txt', 20, 5, peak_finder_settings=peak_finder_settings)
+scan = PygwyTxt(r'C:\Users\Mika Music\Data\251029_WNE_pygwy\gwy\ref.txt', 20, 5)
 scan.plot_scan()
 scan.plot_profile()
 scan.export_stats()
+scan.plot_debug()
