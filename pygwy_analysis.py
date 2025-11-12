@@ -204,7 +204,15 @@ class PygwyTxt:
         period_list = []
 
         for line in self.__scan.value:
-            peaks, peak_metadata = find_peaks(line, self.__peak_finder_settings.height, )
+            peaks, peak_metadata = find_peaks(line,
+                                              self.__peak_finder_settings.height,
+                                              self.__peak_finder_settings.threshold,
+                                              self.__peak_finder_settings.distance,
+                                              self.__peak_finder_settings.prominence,
+                                              self.__peak_finder_settings.width,
+                                              self.__peak_finder_settings.wlen,
+                                              self.__peak_finder_settings.rel_height,
+                                              self.__peak_finder_settings.plateau_size)
             valleys, valley_metadata = find_peaks(line * -1)
 
             heights = []
@@ -312,7 +320,7 @@ class StatJson:
         self.__plot_data_height = None
         self.__plot_data_period = None
 
-    def plot(self, plot_type: int, x_lable: str, x_unit: str, plot_name_appendix='', model=None, params=None):
+    def plot(self, plot_type: int, x_lable: str, x_unit: str, plot_name_appendix='', model=None, params=None, show_title=True):
         """
         Creates a plot for mean and standard deviation of either height or period.
         Optionally applies a fit model to the data.
@@ -377,7 +385,8 @@ class StatJson:
             with open(os.path.join(self.__export_path, f'fit_report_{plot_name}_{plot_name_appendix}.txt'), 'w') as file:
                 file.write(result.fit_report())
 
-        ax.set_title(f'{plot_name} {plot_name_appendix}')
+        if show_title:
+            ax.set_title(f'{plot_name} {plot_name_appendix}')
         ax.plot(x_values, mean, 'o', zorder=2, label='mean')
         ax.errorbar(x_values, mean, yerr=std, fmt='none', capsize=5, ecolor='black', elinewidth=1, zorder=1, label='std')
         plt.xlabel(f"{x_lable} [{x_unit}]")
@@ -440,11 +449,17 @@ class PeakFinderSettings:
         assert rel_height is float or rel_height is None
         assert isinstance(plateau_size, (numbers.Number, np.ndarray, Sequence)) or plateau_size is None
 
-        self.__height = height
-        self.__threshold = threshold
-        self.__distance = distance
-        self.__prominence = prominence
-        self.__width = width
-        self.__wlen = wlen
-        self.__rel_height = rel_height
-        self.__plateau_size = plateau_size
+        self.height = height
+        self.threshold = threshold
+        self.distance = distance
+        self.prominence = prominence
+        self.width = width
+        self.wlen = wlen
+        self.rel_height = rel_height
+        self.plateau_size = plateau_size
+
+peak_finder_settings = PeakFinderSettings(distance=30)
+scan = PygwyTxt(r'C:\Users\Mika Music\Data\251029_WNE_pygwy\gwy\ref.txt', 20, 5, peak_finder_settings=peak_finder_settings)
+scan.plot_scan()
+scan.plot_profile()
+scan.export_stats()
