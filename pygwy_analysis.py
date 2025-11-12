@@ -208,7 +208,6 @@ class PygwyTxt:
         ax[0].plot(self.__peak_array[line], plot_line[self.__peak_array[line]], 'x')
         ax[0].plot(self.__valley_array[line], plot_line[self.__valley_array[line]], 'x')
         for i, height in enumerate(self.__height_map[line]):
-            print(height)
             ax[0].vlines((self.__peak_array[line][i] + self.__valley_array[line][i]) / 2, plot_line[self.__valley_array[line][i]], height + plot_line[self.__valley_array[line][i]], color='red')
 
         ax[1].plot(plot_line)
@@ -495,9 +494,3 @@ class PeakFinderSettings:
         self.wlen = wlen
         self.rel_height = rel_height
         self.plateau_size = plateau_size
-
-scan = PygwyTxt(r'C:\Users\Mika Music\Data\251029_WNE_pygwy\gwy\ref.txt', 20, 5)
-scan.plot_scan()
-scan.plot_profile()
-scan.export_stats()
-scan.plot_debug()
