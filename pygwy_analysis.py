@@ -124,6 +124,7 @@ class PygwyTxt:
         self.__distance_per_index_y = self.__scan_size_y / self.__scan.value.shape[0]
         self.__peak_array = None
         self.__valley_array = None
+        print(peak_finder_settings)
         self.__height_map, self.__period_map = self.__generate_height_and_period_map()
 
         self.__export_path = os.path.join(os.path.dirname(self.__file_path), 'export')
@@ -203,21 +204,30 @@ class PygwyTxt:
 
         plot_line = self.__scan.to(u.m).value[line]
 
+        peaks = self.__peak_array[line][~np.isnan(self.__peak_array[line])].astype(int)
+        valleys = self.__valley_array[line][~np.isnan(self.__valley_array[line])].astype(int)
+
         fig, ax = plt.subplots(2)
+        fig.suptitle(f'{self.__name}')
         ax[0].plot(plot_line)
-        ax[0].plot(self.__peak_array[line], plot_line[self.__peak_array[line]], 'x')
-        ax[0].plot(self.__valley_array[line], plot_line[self.__valley_array[line]], 'x')
+        ax[0].plot(peaks, plot_line[peaks], 'x')
+        ax[0].plot(valleys, plot_line[valleys], 'x')
         for i, height in enumerate(self.__height_map[line]):
-            ax[0].vlines((self.__peak_array[line][i] + self.__valley_array[line][i]) / 2, plot_line[self.__valley_array[line][i]], height + plot_line[self.__valley_array[line][i]], color='red')
+            if i > len(peaks) -1 or i > len(valleys)-1:
+                break
+            ax[0].vlines((peaks[i] + valleys[i]) / 2, plot_line[valleys[i]], height + plot_line[valleys[i]], color='red')
 
         ax[1].plot(plot_line)
-        ax[1].plot(self.__peak_array[line], plot_line[self.__peak_array[line]], 'x')
+        ax[1].plot(peaks, plot_line[peaks], 'x')
         for i, period in enumerate(self.__period_map[line]):
-            plt.hlines(plot_line[self.__peak_array[line][i]], self.__peak_array[line][i], self.__peak_array[line][i] + (period / self.__distance_per_index_x), color='green')
+            if i > len(peaks) -1:
+                break
+            plt.hlines(plot_line[peaks[i]], peaks[i], peaks[i] + (period / self.__distance_per_index_x), color='green')
 
         fig.tight_layout()
         plt.show()
-
+        fig.savefig(os.path.join(self.__export_path, f'{self.__name}_debug.png'),
+                bbox_inches='tight', pad_inches=0.05, dpi=300)
 
 
     def __generate_height_and_period_map(self):
@@ -244,7 +254,15 @@ class PygwyTxt:
                                               self.__peak_finder_settings.wlen,
                                               self.__peak_finder_settings.rel_height,
                                               self.__peak_finder_settings.plateau_size)
-            valleys, valley_metadata = find_peaks(line * -1)
+            valleys, valley_metadata = find_peaks(line * -1,
+                                                  self.__peak_finder_settings.height,
+                                                  self.__peak_finder_settings.threshold,
+                                                  self.__peak_finder_settings.distance,
+                                                  self.__peak_finder_settings.prominence,
+                                                  self.__peak_finder_settings.width,
+                                                  self.__peak_finder_settings.wlen,
+                                                  self.__peak_finder_settings.rel_height,
+                                                  self.__peak_finder_settings.plateau_size)
 
             peak_list.append(peaks)
             valley_list.append(valleys)
