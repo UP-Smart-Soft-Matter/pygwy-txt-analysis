@@ -136,7 +136,7 @@ class PygwyTxt:
         self.__scan = calculate_optimal_exponent(self.__scan)
         self.__stats = self.__calculate_stats()
 
-    def plot_scan(self, show_plot_line=True, cmap='viridis'):
+    def plot_scan(self, show_plot_line=True, cmap='viridis', show_title=True):
         """
         Creates and saves a heatmap of the full scan.
 
@@ -146,16 +146,18 @@ class PygwyTxt:
             If True, marks the central profile line on the heatmap.
         cmap : str, optional
             Matplotlib colormap for visualization.
+        show_title : bool, optional
+            Whether to display the plot title.
         """
         fig, ax = plt.subplots()
         if show_plot_line:
             plt.axhline(y=self.__profile_line * self.__distance_per_index_y, color='red', linewidth=0.5)
-        ax.set_title(f'{self.__name}')
+        if show_title:
+            ax.set_title(f'{self.__name}')
         plt.imshow(self.__scan.value, cmap=cmap, extent=(0, self.__scan_size_x, self.__scan_size_y, 0), interpolation='nearest')
         divider = make_axes_locatable(ax)
         cax = divider.append_axes("right", size="5%", pad=0.05)
         plt.colorbar(label=f'height [{str(self.__scan.unit).replace("u", "µ")}]', cax=cax)
-        ax.set_title(f'{self.__name}')
         ax.xaxis.set_label_position('top')
         ax.xaxis.set_ticks_position('top')
         ax.text(-1.7, -0.53, "µm", ha='left', va='bottom')
@@ -163,20 +165,27 @@ class PygwyTxt:
         plt.show()
         fig.savefig(os.path.join(self.__export_path, f'{self.__name}_heatmap.png'), bbox_inches='tight', pad_inches=0.05, dpi=300)
 
-    def plot_profile(self):
+    def plot_profile(self, show_title=True):
         """
         Plots and saves the height profile along the central horizontal line.
+
+        Parameters
+        ----------
+        show_title : bool, optional
+            Whether to display the plot title.
+
         """
         ls = np.linspace(0, self.__scan_size_x, self.__scan.value.shape[1])
         fig, ax = plt.subplots()
-        ax.set_title(f'{self.__name}')
+        if show_title:
+            ax.set_title(f'{self.__name}')
         plt.plot(ls, self.__scan[self.__profile_line])
         plt.xlabel("width [µm]")
         plt.ylabel(f"height [{str(self.__scan.unit).replace('u', 'µ')}]")
         plt.show()
         fig.savefig(os.path.join(self.__export_path, f'{self.__name}_profile.png'), bbox_inches='tight', pad_inches=0.05, dpi=300)
 
-    def plot_profile_section(self, start: int, stop: int, line: int):
+    def plot_profile_section(self, start: int, stop: int, line: int, show_title=True):
         """
         Plots and saves a specific section of a selected scan line.
 
@@ -188,12 +197,15 @@ class PygwyTxt:
             Ending index of the profile section.
         line : int
             Line index in the scan array.
+        show_title : bool, optional
+            Whether to display the plot title.
         """
         plot_line = self.__scan[line][start:stop+1]
         plot_line_length = len(plot_line) * (self.__scan_size_x / self.__scan.shape[1])
         ls = np.linspace(0, plot_line_length, len(plot_line))
         fig, ax = plt.subplots()
-        ax.set_title(f'{self.__name}')
+        if show_title:
+            ax.set_title(f'{self.__name}')
         plt.plot(ls, plot_line)
         plt.xlabel("width [µm]")
         plt.ylabel(f"height [{str(self.__scan.unit).replace('u', 'µ')}]")
