@@ -126,7 +126,6 @@ class PygwyTxt:
         self.__distance_per_index_y = self.__scan_size_y / self.__scan.value.shape[0]
         self.__peak_array = None
         self.__valley_array = None
-        print(peak_finder_settings)
         self.__height_map, self.__period_map = self.__generate_height_and_period_map()
 
         self.__export_path = os.path.join(os.path.dirname(self.__file_path), 'export')
