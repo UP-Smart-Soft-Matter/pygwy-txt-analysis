@@ -17,17 +17,17 @@ from lmfit import Model
 
 def homogenize_array(array):
     """
-    Makes a 2D array rectangular by padding shorter rows with NaN values.
+    Pads each row of a 2D array with NaN values so all rows have equal length.
 
     Parameters
     ----------
-    array : list of lists
-        Nested list containing numeric values of varying lengths.
+    array : list of lists or list of np.ndarray
+        Nested list or list of arrays containing numeric values of varying lengths.
 
     Returns
     -------
     np.ndarray
-        2D NumPy array with equal row lengths, padded with NaN values.
+        Rectangular 2D NumPy array padded with NaN where needed.
     """
 
     if isinstance(array[0], np.ndarray):
@@ -38,12 +38,12 @@ def homogenize_array(array):
 
 def get_file_path():
     """
-    Opens a directory selection dialog and returns the chosen path.
+    Opens a directory selection dialog and returns the chosen directory path.
 
     Returns
     -------
     str
-        Path to the selected directory.
+        Absolute path of the selected directory.
     """
     root = tk.Tk()
     root.withdraw()
@@ -51,24 +51,24 @@ def get_file_path():
 
 def calculate_optimal_exponent(array):
     """
-    Converts an Astropy Quantity array to an appropriate SI unit prefix
+    Converts an Astropy Quantity array to an SI unit with an appropriate metric prefix
     based on the order of magnitude of its mean value.
 
     Parameters
     ----------
     array : astropy.units.Quantity
-        Input array with a physical unit.
+        Quantity array with a physical unit (e.g. meters).
 
     Returns
     -------
     astropy.units.Quantity
-        The same array converted to a suitable metric unit
+        The same array converted to a matching metric subunit
         (mm, µm, nm, pm, or fm).
 
     Raises
     ------
     Exception
-        If the optimal exponent is outside the supported range (-15 to -3).
+        If the computed optimal exponent is outside the supported range (-15 to -3).
     """
     mean_exponent = int(math.floor(math.log10(array.value.mean())))
     optimal_unit_exponent = 3 * round(mean_exponent / 3)
@@ -88,8 +88,8 @@ def calculate_optimal_exponent(array):
 
 class PygwyTxt:
     """
-    Class for analyzing and visualizing surface profiles from .txt files
-    (e.g., Gwyddion exports).
+    Handles reading, analyzing, and visualizing surface profiles
+    from Gwyddion-exported `.txt` files.
     """
 
     def __init__(self, file_path: str, scan_size_x: float, scan_size_y: float, name: str = None, peak_finder_settings = None):
@@ -99,13 +99,15 @@ class PygwyTxt:
         Parameters
         ----------
         file_path : str
-            Path to the input .txt file.
+            Path to the input `.txt` file containing surface data.
         scan_size_x : float
-            Scan width in µm.
+            Horizontal scan size in µm.
         scan_size_y : float
-            Scan height in µm.
+            Vertical scan size in µm.
         name : str, optional
-            Custom name for the object.
+            Custom name for the dataset. Defaults to the filename.
+        peak_finder_settings : PeakFinderSettings, optional
+            Settings controlling the peak/valley detection algorithm.
         """
         self.__file_path = file_path
         if name is None:
@@ -136,14 +138,14 @@ class PygwyTxt:
 
     def plot_scan(self, show_plot_line=True, cmap='viridis'):
         """
-        Creates and saves a heatmap of the scan.
+        Creates and saves a heatmap of the full scan.
 
         Parameters
         ----------
         show_plot_line : bool, optional
-            Whether to display the profile line in the center of the scan (default: True).
+            If True, marks the central profile line on the heatmap.
         cmap : str, optional
-            Colormap used for visualization.
+            Matplotlib colormap for visualization.
         """
         fig, ax = plt.subplots()
         if show_plot_line:
@@ -163,7 +165,7 @@ class PygwyTxt:
 
     def plot_profile(self):
         """
-        Plots and saves the height profile along the central scan line.
+        Plots and saves the height profile along the central horizontal line.
         """
         ls = np.linspace(0, self.__scan_size_x, self.__scan.value.shape[1])
         fig, ax = plt.subplots()
@@ -176,16 +178,16 @@ class PygwyTxt:
 
     def plot_profile_section(self, start: int, stop: int, line: int):
         """
-        Plots and saves a defined section of a specific profile line.
+        Plots and saves a specific section of a selected scan line.
 
         Parameters
         ----------
         start : int
-            Start index of the section.
+            Starting index of the profile section.
         stop : int
-            End index of the section.
+            Ending index of the profile section.
         line : int
-            Line index in the scan.
+            Line index in the scan array.
         """
         plot_line = self.__scan[line][start:stop+1]
         plot_line_length = len(plot_line) * (self.__scan_size_x / self.__scan.shape[1])
@@ -199,6 +201,14 @@ class PygwyTxt:
         fig.savefig(os.path.join(self.__export_path, f'{self.__name}_profile_line_{line}_from_{start}_to_{stop}.png'), bbox_inches='tight', pad_inches=0.05, dpi=300)
 
     def plot_debug(self, line: int=None):
+        """
+        Visualizes peak and valley detection results for a given line.
+
+        Parameters
+        ----------
+        line : int, optional
+            Line index to visualize. Defaults to the central profile line.
+        """
         if line is None:
             line = self.__profile_line
 
@@ -232,12 +242,12 @@ class PygwyTxt:
 
     def __generate_height_and_period_map(self):
         """
-        Generates maps of peak heights and periods for each scan line.
+        Computes height and period maps from detected peaks and valleys.
 
         Returns
         -------
         tuple of np.ndarray
-            (height_map, period_map), both padded with NaN values.
+            (height_map, period_map) — both padded with NaN values.
         """
         height_list = []
         period_list = []
@@ -291,13 +301,12 @@ class PygwyTxt:
 
     def __calculate_stats(self):
         """
-        Calculates statistical metrics for height and period data
-        (mean, standard deviation, min, max).
+        Computes descriptive statistics for the height and period data.
 
         Returns
         -------
         dict
-            Dictionary containing the computed values in meters.
+            Statistical metrics (mean, std, min, max) in meters.
         """
         mean_height = (np.nanmean(self.__height_map) * u.m).to(self.__scan.unit)
         std_height = (np.nanstd(self.__height_map) * u.m).to(self.__scan.unit)
@@ -336,7 +345,7 @@ class PygwyTxt:
 
     def export_stats(self):
         """
-        Exports the computed statistics as a JSON file in the export directory.
+        Saves the computed statistics to a JSON file inside the export directory.
         """
         export_path = os.path.join(self.__export_path, f'{self.__name}_stats.json')
         with open(export_path, 'w') as f:
@@ -345,13 +354,14 @@ class PygwyTxt:
 
 class StatJson:
     """
-    Class for aggregating and analyzing statistics from multiple JSON files
-    produced by PygwyTxt.
+    Loads, aggregates, and plots statistical results from multiple JSON files
+    generated by `PygwyTxt`.
     """
+
 
     def __init__(self, base_path: str):
         """
-        Initializes a StatJson instance and loads all JSON statistic files.
+        Loads all JSON statistic files from the given directory.
 
         Parameters
         ----------
@@ -377,23 +387,25 @@ class StatJson:
 
     def plot(self, plot_type: int, x_lable: str, x_unit: str, plot_name_appendix='', model=None, params=None, show_title=True):
         """
-        Creates a plot for mean and standard deviation of either height or period.
-        Optionally applies a fit model to the data.
+        Creates a plot showing mean and standard deviation of height or period data.
+        Optionally applies a fitted model to the data.
 
         Parameters
         ----------
         plot_type : int
-            0 = height, 1 = period.
+            0 for height, 1 for period.
         x_lable : str
-            X-axis label.
+            Label for the x-axis.
         x_unit : str
-            X-axis unit.
+            Unit for the x-axis.
         plot_name_appendix : str, optional
-            Optional text to append to the plot name and title.
+            String appended to the filename and plot title.
         model : lmfit.Model, optional
-            Model used for curve fitting.
+            Fit model to apply to the mean values.
         params : lmfit.Parameters, optional
-            Parameters of the fit model.
+            Parameters for the fit model.
+        show_title : bool, optional
+            Whether to display the plot title.
         """
         if plot_type == 0:
             plot_name = "mean height"
@@ -457,12 +469,13 @@ class StatJson:
 
     def export_plot_data(self, plot_type: int):
         """
-        Exports the plot data (x, mean, std, and optional fit) to a CSV file.
+        Exports the x-values, mean, standard deviation, and fit (if available)
+        used in the plots to a CSV file.
 
         Parameters
         ----------
         plot_type : int
-            0 = height, 1 = period.
+            0 for height data, 1 for period data.
         """
         if plot_type == 0:
             plot_data = self.__plot_data_height
@@ -486,6 +499,9 @@ class StatJson:
                         writer.writerow([plot_data[0][i], plot_data[1][i], plot_data[2][i], plot_data[3][i]])
 
 class PeakFinderSettings:
+    """
+    Defines configurable parameters for `scipy.signal.find_peaks`.
+    """
     def __init__(self,
                  height=None,
                  threshold=None,
@@ -495,6 +511,28 @@ class PeakFinderSettings:
                  wlen=None,
                  rel_height=None,
                  plateau_size=None):
+        """
+        Initializes the peak-finding parameter object.
+
+        Parameters
+        ----------
+        height : float or sequence, optional
+            Required height of peaks.
+        threshold : float or sequence, optional
+            Required vertical difference between peaks and neighbors.
+        distance : int, optional
+            Minimum horizontal distance between peaks.
+        prominence : float or sequence, optional
+            Required prominence of peaks.
+        width : float or sequence, optional
+            Required width of peaks.
+        wlen : int, optional
+            Window length for peak prominence evaluation.
+        rel_height : float, optional
+            Relative height at which the peak width is measured.
+        plateau_size : float or sequence, optional
+            Range of flat peak plateaus.
+        """
         assert isinstance(height, (numbers.Number, np.ndarray, Sequence)) or height is None
         assert isinstance(threshold, (numbers.Number, np.ndarray, Sequence)) or threshold is None
         assert isinstance(distance, numbers.Number) or distance is None
