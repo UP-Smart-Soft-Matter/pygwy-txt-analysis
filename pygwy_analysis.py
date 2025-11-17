@@ -36,7 +36,7 @@ def homogenize_array(array):
     max_len = max(len(row) for row in array)
     return np.array([row + [np.nan] * (max_len - len(row)) for row in array])
 
-def get_file_path():
+def get_folder_path():
     """
     Opens a directory selection dialog and returns the chosen directory path.
 
@@ -48,6 +48,19 @@ def get_file_path():
     root = tk.Tk()
     root.withdraw()
     return filedialog.askdirectory()
+
+def get_file_path():
+    """
+    Opens a file selection dialog and returns the chosen file path.
+
+    Returns
+    -------
+    str
+        Absolute path of the selected file.
+    """
+    root = tk.Tk()
+    root.withdraw()
+    return filedialog.askopenfilename()
 
 def calculate_optimal_exponent(array):
     """

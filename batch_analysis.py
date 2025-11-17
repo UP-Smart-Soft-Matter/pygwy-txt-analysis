@@ -9,7 +9,7 @@ x_lable = 'pixel'
 x_unit = 'px'
 peak_finder_settings = pygwy_analysis.PeakFinderSettings(prominence=0.3e-7)
 
-basepath = pygwy_analysis.get_file_path()
+basepath = pygwy_analysis.get_folder_path()
 file_list_txt = glob2.glob(os.path.join(basepath, '*[!exclude]*.txt'))
 for file_path in file_list_txt:
     scan = pygwy_analysis.PygwyTxt(file_path, scan_size_x, scan_size_y, peak_finder_settings=peak_finder_settings)
