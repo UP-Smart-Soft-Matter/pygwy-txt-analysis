@@ -3,10 +3,10 @@ import glob2
 import os
 from lmfit import Model
 
-scan_size_x = 20
-scan_size_y = 5
-x_lable = 'time'
-x_unit = 's'
+scan_size_x = 25
+scan_size_y = 25
+x_lable = 'pixel'
+x_unit = 'px'
 peak_finder_settings = pygwy_analysis.PeakFinderSettings(prominence=0.3e-7)
 
 basepath = pygwy_analysis.get_file_path()
@@ -17,6 +17,8 @@ for file_path in file_list_txt:
     scan.plot_profile()
     scan.export_stats()
     scan.plot_debug()
+    scan.plot_heatmap(0)
+    scan.plot_heatmap(1)
 
 stats = pygwy_analysis.StatJson(os.path.join(basepath, 'export'))
 stats.plot(0, x_lable, x_unit)

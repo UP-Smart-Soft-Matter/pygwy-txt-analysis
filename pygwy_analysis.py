@@ -362,6 +362,32 @@ class PygwyTxt:
         with open(export_path, 'w') as f:
             json.dump(self.__stats, f)
 
+    def plot_heatmap(self, plot_type:int, cmap='hot'):
+        """
+        Creates and saves a heatmap of the height or period map.
+
+        Parameters
+        ----------
+        plot_type : int
+            0 for height map, 1 for period map.
+        cmap : str, optional
+            Matplotlib colormap for visualization (default is 'hot').
+        """
+        fig, ax = plt.subplots()
+        if plot_type == 0:
+            ax.set_title(f"{self.__name} Height Heatmap")
+            plt.imshow(self.__height_map, cmap=cmap, interpolation='none', aspect='auto')
+            name_appendix = 'height_heat_map'
+        elif plot_type == 1:
+            ax.set_title(f"{self.__name} Period Heatmap")
+            plt.imshow(self.__period_map, cmap=cmap, interpolation='none', aspect='auto')
+            name_appendix = 'period_heat_map'
+        plt.colorbar()
+        plt.show()
+        fig.tight_layout()
+        fig.savefig(os.path.join(self.__export_path, f'{self.__name}_{name_appendix}.png'),
+                    bbox_inches='tight', pad_inches=0.05, dpi=300)
+
 
 class StatJson:
     """
