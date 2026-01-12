@@ -401,6 +401,42 @@ class PygwyTxt:
         fig.savefig(os.path.join(self.__export_path, f'{self.__name}_{name_appendix}.png'),
                     bbox_inches='tight', pad_inches=0.05, dpi=300)
 
+    def plot_histogram(self, plot_type:int, bins=50):
+        """
+        Creates and saves a histogram of the height or period distribution.
+
+        Parameters
+        ----------
+        plot_type : int
+            Selects the data to plot:
+            0 → height values from the height map
+            1 → period values from the period map
+        bins : int, optional
+            Number of histogram bins. Default is 50.
+
+        Notes
+        -----
+        The histogram is generated from all valid (non-NaN) values in the
+        corresponding map. The resulting figure is displayed and saved
+        as a PNG file in the export directory.
+        """
+        fig, ax = plt.subplots()
+        if plot_type == 0:
+            ax.set_title(f"{self.__name} Height Histogram")
+            plt.hist(self.__height_map.flatten(), bins=bins)
+            ax.set_xlabel("height [m]")
+            fname = f"{self.__name}_height_histogram.png"
+        elif plot_type == 1:
+            ax.set_title(f"{self.__name} Period Histogram")
+            plt.hist(self.__period_map.flatten(), bins=bins)
+            ax.set_xlabel("period [m]")
+            fname = f"{self.__name}_period_histogram.png"
+
+        ax.set_ylabel("counts")
+        plt.show()
+        fig.tight_layout()
+        fig.savefig(os.path.join(self.__export_path, f'{fname}.png'),
+                    bbox_inches='tight', pad_inches=0.05, dpi=300)
 
 class StatJson:
     """
