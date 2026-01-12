@@ -31,4 +31,4 @@ Homepage = "https://github.com/UP-Smart-Soft-Matter/pygwy-txt-analysis"
 Issues = "https://github.com/UP-Smart-Soft-Matter/pygwy-txt-analysis/issues"
 
 [tool.hatch.build.targets.wheel]
-packages = ["pygwy_txt_analysis"]
+packages = ["src/pygwy_txt_analysis"]
