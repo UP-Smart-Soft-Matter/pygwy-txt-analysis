@@ -2,7 +2,7 @@
 requires = ["hatchling"]
 build-backend = "hatchling.build"
 [project]
-name = "pygwy-txt-analysis"
+name = "pygwy_txt_analysis"
 version = "0.0.1"
 authors = [
   { name="Mika Music", email="mika.music@uni-potsdam.de" },
