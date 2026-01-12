@@ -1,0 +1,34 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+[project]
+name = "pygwy-txt-analysis"
+version = "0.0.1"
+authors = [
+  { name="Mika Music", email="mika.music@uni-potsdam.de" },
+]
+description = "A library to analize and plot AFM scans"
+readme = "README.md"
+requires-python = ">=3.9"
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "Operating System :: OS Independent",
+]
+license = "LGPL-3.0-only"
+license-files = ["LICEN[CS]E*"]
+
+dependencies = [
+    "lmfit",
+    "astropy",
+    "glob2",
+    "matplotlib",
+    "numpy",
+    "scipy"
+]
+
+[project.urls]
+Homepage = "https://github.com/UP-Smart-Soft-Matter/pygwy-txt-analysis"
+Issues = "https://github.com/UP-Smart-Soft-Matter/pygwy-txt-analysis/issues"
+
+[tool.hatch.build.targets.wheel]
+packages = ["pygwy_txt_analysis"]
