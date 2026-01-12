@@ -15,7 +15,7 @@ import re
 import csv
 from lmfit import Model
 
-def homogenize_array(array):
+def _homogenize_array(array):
     """
     Pads each row of a 2D array with NaN values so all rows have equal length.
 
@@ -62,7 +62,7 @@ def get_file_path():
     root.withdraw()
     return filedialog.askopenfilename()
 
-def calculate_optimal_exponent(array):
+def _calculate_optimal_exponent(array):
     """
     Converts an Astropy Quantity array to an SI unit with an appropriate metric prefix
     based on the order of magnitude of its mean value.
@@ -145,7 +145,7 @@ class PygwyTxt:
         if not os.path.exists(self.__export_path):
             os.mkdir(self.__export_path)
 
-        self.__scan = calculate_optimal_exponent(self.__scan)
+        self.__scan = _calculate_optimal_exponent(self.__scan)
         self.__stats = self.__calculate_stats()
 
     def plot_scan(self, show_plot_line=True, cmap='viridis', show_title=True):
@@ -316,11 +316,11 @@ class PygwyTxt:
             height_list.append(heights)
             period_list.append(periods)
 
-        self.__peak_array = homogenize_array(peak_list)
-        self.__valley_array = homogenize_array(valley_list)
+        self.__peak_array = _homogenize_array(peak_list)
+        self.__valley_array = _homogenize_array(valley_list)
 
-        height_map = homogenize_array(height_list)
-        period_map = homogenize_array(period_list)
+        height_map = _homogenize_array(height_list)
+        period_map = _homogenize_array(period_list)
         return height_map, period_map
 
     def __calculate_stats(self):
@@ -519,7 +519,7 @@ class StatJson:
         elif plot_type == 1:
             self.__plot_data_period = [x_values, mean, std]
 
-        mean = calculate_optimal_exponent(mean * u.m)
+        mean = _calculate_optimal_exponent(mean * u.m)
         std = (std * u.m).to(mean.unit)
 
         fig, ax = plt.subplots()
