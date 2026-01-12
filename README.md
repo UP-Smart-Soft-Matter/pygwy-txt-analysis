@@ -1,10 +1,16 @@
 # README
 
 ## Overview
+
 This script provides tools for analyzing and visualizing surface profiles exported from **Gwyddion** `.txt` files. It allows you to create height maps, profile plots, perform peak/valley detection, and compute statistical metrics and model fits from surface data.
 
 ---
-### `batch_analysis.py`
+## Installation
+
+`pip install pygwy_txt_analysis`
+
+---
+### Example: `batch_analysis.py`
 
 ### Important File Naming Convention
 To ensure proper ordering in the aggregated plots, the filenames of the `.txt` files should include a numeric designator at the start representing their position or parameter (e.g., time). This number is used to sort the files before processing. Example:
@@ -27,7 +33,7 @@ To ensure proper ordering in the aggregated plots, the filenames of the `.txt` f
 
 
 ```python
-peak_finder_settings = pygwy_analysis.PeakFinderSettings(prominence=0.3e-7)
+peak_finder_settings = pygwy_txt_analysis.PeakFinderSettings(prominence=0.3e-7)
 ```
 
 
@@ -42,7 +48,7 @@ peak_finder_settings = pygwy_analysis.PeakFinderSettings(prominence=0.3e-7)
 
 
 ```python
-stats = pygwy_analysis.StatJson(os.path.join(basepath, 'export'))
+stats = pygwy_txt_analysis.StatJson(os.path.join(basepath, 'export'))
 stats.plot(0, x_label, x_unit) # height
 stats.plot(1, x_label, x_unit) # period
 stats.export_plot_data(0)
