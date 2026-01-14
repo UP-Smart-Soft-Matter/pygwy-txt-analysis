@@ -10,49 +10,14 @@ This script provides tools for analyzing and visualizing surface profiles export
 `pip install /path/to/pygwy_txt-[VERSION].tar.gz`
 
 ---
-### Example: `batch_analysis.py`
 
-### Important File Naming Convention
-To ensure proper ordering in the aggregated plots, the filenames of the `.txt` files should include a numeric designator at the start representing their position or parameter (e.g., time). This number is used to sort the files before processing. Example:
-
+# Important File Naming Convention
+To ensure proper ordering in the aggregated plots, the filenames of the `.txt` files has to have the x-axis parameter as first number in the file name.
 
 ```
-01_sample.txt
-02_sample.txt
-03_sample.txt
-```
-
-
----
-
-
-## How to Use
-1. Select the folder containing the `.txt` scan files when prompted.
-2. Set scan sizes (`scan_size_x`, `scan_size_y`) in micrometers.
-3. Optionally configure peak detection using `PeakFinderSettings`. Example:
-
-
-```python
-peak_finder_settings = pygwy_txt_analysis.PeakFinderSettings(prominence=0.3e-7)
-```
-
-
-4. The script will:
-- Load each `.txt` file in order.
-- Create and display heatmaps (`plot_scan`) and central profiles (`plot_profile`).
-- Detect peaks and valleys (`plot_debug`).
-- Export statistics as JSON in an `export` folder.
-
-
-5. Aggregate statistics are plotted using `StatJson` and exported to CSV for height and period:
-
-
-```python
-stats = pygwy_txt_analysis.StatJson(os.path.join(basepath, 'export'))
-stats.plot(0, x_label, x_unit) # height
-stats.plot(1, x_label, x_unit) # period
-stats.export_plot_data(0)
-stats.export_plot_data(1)
+1s_sample.txt
+5s_sample.txt
+10s_sample.txt
 ```
 ---
 ## Classes and Initialization
