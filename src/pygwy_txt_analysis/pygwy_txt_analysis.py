@@ -10,7 +10,7 @@ from scipy.signal import find_peaks
 import json
 import tkinter as tk
 from tkinter import filedialog
-import glob2
+import glob
 import re
 import csv
 from lmfit import Model
@@ -460,7 +460,7 @@ class StatJson:
             os.makedirs(self.__export_path)
 
         self.__lamda = lambda x: int(re.findall(r'\d+', os.path.split(x)[-1])[0])
-        file_list = sorted(glob2.glob(os.path.join(base_path, '*[!exclude]*.json')), key=self.__lamda)
+        file_list = sorted(glob.glob(os.path.join(base_path, '*[!exclude]*.json')), key=self.__lamda)
 
         self.__stat_list = []
         for file_path in file_list:
