@@ -2,8 +2,8 @@ import pygwy_txt_analysis
 import glob2
 import os
 
-scan_size_x = 100
-scan_size_y = 100
+scan_size_x = 20
+scan_size_y = 20
 x_lable = 'time'
 x_unit = 's'
 peak_finder_settings = pygwy_txt_analysis.PeakFinderSettings(prominence=0.3e-7)

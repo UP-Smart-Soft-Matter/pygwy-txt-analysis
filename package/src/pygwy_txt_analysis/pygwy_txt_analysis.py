@@ -471,7 +471,16 @@ class StatJson:
         self.__plot_data_height = None
         self.__plot_data_period = None
 
-    def plot(self, plot_type: int, x_lable: str, x_unit: str, plot_name_appendix='', model=None, params=None, show_title=True):
+    def plot(self,
+             plot_type: int,
+             x_lable: str,
+             x_unit: str,
+             plot_name_appendix='',
+             model=None,
+             params=None,
+             show_title=True,
+             x_log=False,
+             y_log=False):
         """
         Creates a plot showing mean and standard deviation of height or period data.
         Optionally applies a fitted model to the data.
@@ -492,6 +501,10 @@ class StatJson:
             Parameters for the fit model.
         show_title : bool, optional
             Whether to display the plot title.
+        x_log : bool, optional
+            Whether to a logarithmic scale on the x-axis.
+        y_log : bool, optional
+            Whether to a logarithmic scale on the y-axis.
         """
         if plot_type == 0:
             plot_name = "mean height"
@@ -523,6 +536,11 @@ class StatJson:
         std = (std * u.m).to(mean.unit)
 
         fig, ax = plt.subplots()
+
+        if x_log:
+            ax.set_xscale('log')
+        if y_log:
+            ax.set_yscale('log')
 
         if model is not None and params is not None:
             assert isinstance(model, Model) == True

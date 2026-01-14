@@ -7,7 +7,7 @@ This script provides tools for analyzing and visualizing surface profiles export
 ---
 ## Installation
 
-`pip install pygwy_txt_analysis`
+`pip install /path/to/pygwy_txt-[VERSION].tar.gz`
 
 ---
 ### Example: `batch_analysis.py`
@@ -87,7 +87,7 @@ Collects and processes multiple JSON statistic files to visualize aggregated res
 - `base_path: str` – Directory containing JSON statistic files.
 
 **Key methods:**
-- `plot(plot_type, x_label, x_unit, plot_name_appendix='', model=None, params=None, show_title=True)` – Plots mean and standard deviation of height (`plot_type=0`) or period (`plot_type=1`). Optionally applies a model fit.  
+- `plot(plot_type, x_label, x_unit, plot_name_appendix='', model=None, params=None, show_title=True, x_log=False, y_log=False)` – Plots mean and standard deviation of height (`plot_type=0`) or period (`plot_type=1`). Optionally applies a model fit.  
 - `export_plot_data(plot_type)` – Exports the plotted data (including fits) to a CSV file.  
 
 ---
