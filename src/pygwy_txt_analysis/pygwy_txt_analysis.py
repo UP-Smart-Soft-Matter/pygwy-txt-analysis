@@ -459,7 +459,7 @@ class StatJson:
         if not os.path.exists(self.__export_path):
             os.makedirs(self.__export_path)
 
-        self.__lamda = lambda x: int(re.findall(r'\d+', os.path.split(x)[-1])[0])
+        self.__lamda = lambda x: int(re.findall(r'-?\d+', os.path.split(x)[-1])[0])
         file_list = sorted(glob.glob(os.path.join(base_path, '*[!exclude]*.json')), key=self.__lamda)
 
         self.__stat_list = []
