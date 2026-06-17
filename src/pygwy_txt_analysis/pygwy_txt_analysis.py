@@ -105,7 +105,7 @@ class PygwyTxt:
     from Gwyddion-exported `.txt` files.
     """
 
-    def __init__(self, file_path: str, scan_size_x: float, scan_size_y: float, name: str = None, peak_finder_settings = None):
+    def __init__(self, file_path: str, scan_size_x: float, scan_size_y: float, name: str = None, peak_finder_settings = None, skip_header=0, input_unit=u.m):
         """
         Initializes a PygwyTxt instance.
 
@@ -133,7 +133,7 @@ class PygwyTxt:
             self.__peak_finder_settings = peak_finder_settings
         self.__scan_size_x = scan_size_x
         self.__scan_size_y = scan_size_y
-        self.__scan = np.genfromtxt(file_path, delimiter='\t') * u.m
+        self.__scan = (np.genfromtxt(file_path, delimiter='\t', skip_header=skip_header) * input_unit).to(u.m)
         self.__profile_line = int(self.__scan.value.shape[0]/2)
         self.__distance_per_index_x = self.__scan_size_x / self.__scan.value.shape[1]
         self.__distance_per_index_y = self.__scan_size_y / self.__scan.value.shape[0]
