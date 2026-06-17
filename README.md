@@ -30,7 +30,9 @@ Handles reading, analysis, and visualization of a single Gwyddion `.txt` scan fi
 - `scan_size_x: float` – Horizontal scan size in micrometers.  
 - `scan_size_y: float` – Vertical scan size in micrometers.  
 - `name: str, optional` – Custom name for the dataset. Defaults to the filename.  
-- `peak_finder_settings: PeakFinderSettings, optional` – Settings controlling peak/valley detection.
+- `peak_finder_settings: PeakFinderSettings, optional` – Settings controlling peak/valley detection. 
+- `skip_header: int, optional` – Skips that many rows at the start of the input file. Default: 0.
+- `input_unit: astropy.unit, optional` – Gives the unit of the data in the input file. Default: astopy.unint.m
 
 **Key methods:**
 - `plot_scan()` – Creates a heatmap of the full scan.  
